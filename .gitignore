@@ -3,6 +3,4 @@
 __pycache__/
 quizzes.pdf
 venv/
-Yahei.*.pkl
-Yahei.pkl
-dkzt.*.pkl
+*.pkl

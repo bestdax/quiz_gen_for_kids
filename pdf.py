@@ -21,13 +21,17 @@ class PDF(FPDF):
         self.multi_cell(210, 13, txt='姓名' + underline + '开始时间' + underline + '结束时间' + underline + '得分' + underline,
                         border=0, ln=2, align="C")
 
-    def set_quizzes(self):
+    def set_quizzes(self, quiz_type='default'):
         start_x, start_y = 15, 50
         cell_height = 6.6
         cell_width = 60
         self.set_xy(start_x, start_y)
         self.set_font("dkzt", '', 12)
-        quizzes = quiz_gen().split('\n')
+        if quiz_type == 'default':
+            quizzes = quiz_gen().split('\n')
+        elif quiz_type == 'minus_plus_multiply':
+            quizzes = quiz_gen(quiz_type=quiz_type).split('\n')
+
         for index in range(100):
             row = index // 3
             col = index % 3
@@ -43,5 +47,6 @@ if __name__ == '__main__':
     pdf.add_page()
     pdf.set_title('四则运算练习')
     pdf.set_date()
+    # pdf.set_quizzes(quiz_type='minus_plus_multiply')
     pdf.set_quizzes()
     pdf.output('quizzes.pdf', 'F')

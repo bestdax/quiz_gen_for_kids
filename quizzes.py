@@ -1,6 +1,10 @@
 import random
 import datetime
 
+class Quiz:
+    def __init__(self):
+        self.types = ['plus', 'minus', 'mul', 'div']
+        self.op_qty = 1
 operations = '+-*/'
 
 

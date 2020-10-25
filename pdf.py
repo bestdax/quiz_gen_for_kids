@@ -13,11 +13,14 @@ class PDF(FPDF):
         self.set_font("Yahei", '', 24)
         self.cell(210, 40, txt=title, border=0, ln=2, align="C")
 
-    def set_date(self):
+    def set_date(self, date=True):
         self.set_xy(0, 20)
         self.set_font("Yahei", '', 14)
         underline = '_' * 13
-        self.multi_cell(195, 10, txt=today_string(), border=0, ln=2, align="R")
+        if date:
+            self.multi_cell(195, 10, txt=today_string(), border=0, ln=2, align="R")
+        else:
+            self.multi_cell(195, 10, txt='', border=0, ln=2, align='R')
         self.multi_cell(210, 13, txt='姓名' + underline + '开始时间' + underline + '结束时间' + underline + '得分' + underline,
                         border=0, ln=2, align="C")
 
@@ -39,12 +42,23 @@ class PDF(FPDF):
 
 if __name__ == '__main__':
     pdf = PDF()
-    for i in range(1):
+    types_of_quiz = ['10以内加减法',
+                     '20以内加减法',
+                     '100以内加减法',
+                     '表内乘法接10以内加减法']
+    # 选择题型，页数，是否显示日期
+    index = [0, ]
+    pages = 1
+    date = True
+
+    for i in range(pages):
         pdf.add_page()
         pdf.set_title('四则运算练习')
-        pdf.set_date()
+        pdf.set_date(date)
         q = Quiz()
-        quizzes = q.bulk_quiz_gen('100以内加减法')
-        # pdf.set_quizzes(quiz_type='minus_plus_multiply')
+        types = []
+        for i in index:
+            types.append(types_of_quiz[i])
+        quizzes = q.bulk_quiz_gen(types)
         pdf.set_quizzes(quizzes=quizzes)
     pdf.output('quizzes.pdf', 'F')

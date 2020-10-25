@@ -1,42 +1,55 @@
 import random
 import datetime
 
+
+def type_paras(quiz_type=None):
+    if quiz_type == '10以内加减法':
+        return {'ops': random.choice('+-'), 'rng': 10}
+    elif quiz_type == '20以内加减法':
+        return {'ops': random.choice('+-'), 'rng': 20}
+    elif quiz_type == '100以内加减法':
+        return {'ops': random.choice('+-'), 'rng': 100}
+    elif quiz_type == '表内乘法接10以内加减法':
+        return {'ops': '*' + random.choice('+-'), 'rng': 10}
+    else:
+        return ''
+
+
 class Quiz:
     def __init__(self):
-        self.types = ['plus', 'minus', 'mul', 'div']
-        self.op_qty = 1
-operations = '+-*/'
+        self.ops = '+-*/'
 
+    def quiz_gen(self, ops=None, rng=100):
+        # 如果没有指定运算符从加减乘除中随机选择一个
+        if not ops:
+            ops = random.choice(self.ops)
+        a = random.randint(1, rng - 1)
+        b = random.randint(1, rng - 1)
 
-def quiz_gen(quantity=100, quiz_type='minus_plus'):
-    quizzes = ''
-    if quiz_type == 'minus_plus':
-        ops = operations[:2]
-        for i in range(quantity):
-            a = random.randint(10, quantity - 1)
-            b = random.randint(10, quantity - 1)
-            op = random.choice(ops)
-            end = '\n'
+        for op in ops:
+            # 如果是减法的话，被减数小于减数的话，对调
             if op == '-':
-                a, b = max(a, b), min(a, b)
-            quiz = f'{i + 1:3}) ' + str(a) + ' ' + op + ' ' + str(b) + ' = (     )' + end
-            quizzes += quiz
-        return quizzes
-    if quiz_type == 'minus_plus_multiply':
-        ops = operations[:3]
-        for i in range(quantity):
-            a = random.randint(1, 9)
-            b = random.randint(1, 9)
-            op = random.choice(ops[:2])
-            while True:
-                c = random.randint(1, 9)
-                if op == '-':
-                    if a * b >= c:
-                        break
+                if type(a) == str:
+                    if eval(a) < b:
+                        a, b = b, a
                 else:
-                    break
-            quiz = f'{i + 1:3}) {a} × {b} {op} {c} = \n'
-            quizzes += quiz
+                    a, b = b, a
+            quiz = f'{a:2} {op} {b:2}'
+            a = quiz
+            b = random.randint(1, rng - 1)
+        quiz = quiz.replace('*', '×')
+        quiz = quiz.replace('/', '÷') + ' ='
+        return quiz
+
+    def bulk_quiz_gen(self, type=None, qty=100):
+        if not type:
+            type = self.quiz_types[random.choice(self.quiz_types.keys())]
+        quizzes = []
+        for i in range(qty):
+            paras = type_paras(type)
+            quiz = f'{i + 1:3}) ' + self.quiz_gen(**paras)
+            quizzes.append(quiz)
+
         return quizzes
 
 
@@ -47,4 +60,8 @@ def today_string():
 
 
 if __name__ == '__main__':
-    print(quiz_gen(quiz_type='minus_plus_multiply'))
+    q = Quiz()
+    t = type_paras('表内乘法接10以内加减法')
+    print(t)
+    # for item in t:
+    #     print(item)

@@ -41,16 +41,17 @@ class Quiz:
         quiz = quiz.replace('/', '÷') + ' ='
         return quiz
 
-    def bulk_quiz_gen(self, type=None, qty=100):
-        if not type:
-            type = self.quiz_types[random.choice(self.quiz_types.keys())]
+    def bulk_quiz_gen(self, types=None, qty=100):
+        if not types:
+            print('请提供习题类型')
         quizzes = []
         for i in range(qty):
-            paras = type_paras(type)
+            type_index = i // (100 // len(types))
+            paras = type_paras(types[type_index])
             quiz = f'{i + 1:3}) ' + self.quiz_gen(**paras)
             quizzes.append(quiz)
-
         return quizzes
+
 
 
 def today_string():

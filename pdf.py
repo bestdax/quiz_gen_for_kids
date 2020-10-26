@@ -11,8 +11,8 @@ def today_string():
 class PDF(FPDF):
     def __init__(self):
         super().__init__()
-        self.add_font("Yahei", '', "Yahei.ttf", True)
-        self.add_font("dkzt", '', "dkzt.ttf", True)
+        self.add_font("Yahei", '', "rsc/Yahei.ttf", True)
+        self.add_font("dkzt", '', "rsc/dkzt.ttf", True)
 
     def set_title(self, title):
         self.set_xy(0, 0)

@@ -1,5 +1,4 @@
 import random
-import datetime
 
 
 def type_paras(quiz_type=None):
@@ -53,11 +52,6 @@ class Quiz:
         return quizzes
 
 
-
-def today_string():
-    today = datetime.date.today()
-    today = today.strftime('%Y年%m月%d日')
-    return today
 
 
 if __name__ == '__main__':

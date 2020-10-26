@@ -1,5 +1,11 @@
 from fpdf import FPDF
-from quizzes import Quiz, today_string, type_paras
+import datetime
+
+
+def today_string():
+    today = datetime.date.today()
+    today = today.strftime('%Y年%m月%d日')
+    return today
 
 
 class PDF(FPDF):

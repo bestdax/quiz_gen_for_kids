@@ -10,8 +10,8 @@ types_of_quiz = ['10以内加减法',
                  '表内乘法接10以内加减法']
 
 # 如果有设置文件就读取并执行没有的话就新建一个
-if os.path.exists('config', 'r'):
-    with open('config') as c:
+if os.path.exists('config'):
+    with open('config', 'r') as c:
         config = c.read()
         exec(config)
 else:

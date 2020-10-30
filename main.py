@@ -1,3 +1,5 @@
+import os
+
 from pdf import PDF
 from quizzes import Quiz
 
@@ -6,10 +8,28 @@ types_of_quiz = ['10以内加减法',
                  '20以内加减法',
                  '100以内加减法',
                  '表内乘法接10以内加减法']
-# 选择题型，页数，是否显示日期
+
+# 如果有设置文件就读取并执行没有的话就新建一个
+if os.path.exists('config', 'r'):
+    with open('config') as c:
+        config = c.read()
+        exec(config)
+else:
+    config = '''
+# 这个文件中保存的是生成试题的设置
+# 以下是题型对应的编号
+# 0     10以内加减法
+# 1     20以内加减法
+# 2     100以内加减法
+# 3     表内乘法接10以内加减法
+# 在以下设置中修改以生成想要的试题
 index = [2, ]
 pages = 1
 date = True
+    '''
+    with open('config.txt', 'w') as c:
+        c.write(config)
+        exec(config)
 
 for i in range(pages):
     pdf.add_page()

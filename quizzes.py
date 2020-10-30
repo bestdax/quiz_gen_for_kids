@@ -32,7 +32,8 @@ class Quiz:
                     if eval(a) < b:
                         a, b = b, a
                 else:
-                    a, b = b, a
+                    if a < b:
+                        a, b = b, a
             quiz = f'{a:2} {op} {b:2}'
             a = quiz
             b = random.randint(1, rng - 1)

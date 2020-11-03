@@ -14,7 +14,7 @@ def type_paras(quiz_type=None):
         return {'ops': '*', 'rng': 6}
     else:
         return ''
-
+# 要修改代码以提高扩展性
 
 class Quiz:
     def __init__(self):
@@ -30,12 +30,8 @@ class Quiz:
         for op in ops:
             # 如果是减法的话，被减数小于减数的话，对调
             if op == '-':
-                if type(a) == str:
-                    if eval(a) < b:
-                        a, b = b, a
-                else:
-                    if a < b:
-                        a, b = b, a
+                if eval(str(a)) < b:
+                    a, b = b, a
             quiz = f'{a:2} {op} {b:2}'
             a = quiz
             b = random.randint(1, rng - 1)

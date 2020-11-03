@@ -10,6 +10,8 @@ def type_paras(quiz_type=None):
         return {'ops': random.choice('+-'), 'rng': 100}
     elif quiz_type == '表内乘法接10以内加减法':
         return {'ops': '*' + random.choice('+-'), 'rng': 10}
+    elif quiz_type == '表内乘法':
+        return {'ops': '*', 'rng': 6}
     else:
         return ''
 

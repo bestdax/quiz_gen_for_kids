@@ -4,3 +4,4 @@ __pycache__/
 quizzes.pdf
 venv/
 *.pkl
+config

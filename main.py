@@ -4,11 +4,6 @@ from pdf import PDF
 from quizzes import Quiz
 
 pdf = PDF()
-types_of_quiz = ['10以内加减法',
-                 '20以内加减法',
-                 '100以内加减法',
-                 '表内乘法接10以内加减法',
-                 '表内乘法']
 
 # 如果有设置文件就读取并执行没有的话就新建一个
 if os.path.exists('config'):
@@ -18,29 +13,31 @@ if os.path.exists('config'):
 else:
     config = '''
 # 这个文件中保存的是生成试题的设置
-# 以下是题型对应的编号
-# 0     10以内加减法
-# 1     20以内加减法
-# 2     100以内加减法
-# 3     表内乘法接10以内加减法
-# 4     表内乘法
-# 在以下设置中修改以生成想要的试题
-index = [2, ]
+# 您可以根据自己的需要生成需要的习题
+# 设置的方法如下：
+# 在paras后面的填上习题的代码
+# 示例：
+# ['*(+-) 10 100 0.8'， '(+-) 100 0.2']
+# 第一段表示乘法后面接加法或者减法，后面的10对应乘法的数字边界最大为9
+# 100是后面加减法的边界
+# 0.8代表试题数量的权重，如果一共100题的话，这个题型有80题
+# 运算符+-*/分别代表加减乘除
+paras = ['(+-) 100 0.75',
+         '* 7 0.25']
 pages = 1
 date = True
+qty = 100
     '''
     with open('config', 'w') as c:
         c.write(config)
         exec(config)
+
 
 for i in range(pages):
     pdf.add_page()
     pdf.set_title('四则运算练习')
     pdf.set_date(date)
     q = Quiz()
-    types = []
-    for i in index:
-        types.append(types_of_quiz[i])
-    quizzes = q.bulk_quiz_gen(types)
+    quizzes = q.bulk_quiz_gen(paras, qty=qty)
     pdf.set_quizzes(quizzes=quizzes)
 pdf.output('quizzes.pdf', 'F')

@@ -36,7 +36,7 @@ class PDF(FPDF):
         cell_width = 60
         self.set_xy(start_x, start_y)
         self.set_font("dkzt", '', 12)
-        for index in range(100):
+        for index in range(len(quizzes)):
             row = index // 3
             col = index % 3
             formula = quizzes[index]

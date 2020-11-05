@@ -1,5 +1,4 @@
 import random
-import re
 
 
 # 参数解析器
@@ -38,6 +37,7 @@ def para_parser(para):
 
 
 # TODO 要修改代码以提高扩展性
+# TODO 需要增加结果范围的设置，进位加和退位减的设置
 
 class Quiz:
     def __init__(self):
@@ -59,8 +59,8 @@ class Quiz:
                 b = random.randint(1, rngs[i] - 1)
                 # 如果是减法的话，被减数小于减数的话，对调
                 if op == '-':
-                    if eval(str(a)) < b:
-                        a, b = b, a
+                    while eval(str(a)) < b:
+                        b = random.randint(1, rngs[i] - 1)
                 quiz = f'{a:2} {op} {b:2}'
                 a = quiz
             quiz = quiz.replace('*', '×')

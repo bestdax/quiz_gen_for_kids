@@ -4,14 +4,7 @@ from pdf import PDF
 from quizzes import Quiz
 
 pdf = PDF()
-
-# 如果有设置文件就读取并执行没有的话就新建一个
-if os.path.exists('config'):
-    with open('config', 'r') as c:
-        config = c.read()
-        exec(config)
-else:
-    config = '''
+default_config = '''#设置文件版本V0.1
 # 这个文件中保存的是生成试题的设置
 # 您可以根据自己的需要生成需要的习题
 # 设置的方法如下：
@@ -28,9 +21,22 @@ pages = 1
 date = True
 qty = 100
     '''
+
+# 如果有设置文件就读取并执行没有的话就新建一个
+if os.path.exists('config'):
+    with open('config', 'r+') as c:
+        config = c.read()
+        if 'V0.1' in config:
+            exec(config)
+        else:
+            config = default_config
+            c.seek(0)
+            c.truncate()
+            c.write(config)
+else:
     with open('config', 'w') as c:
-        c.write(config)
-        exec(config)
+        c.write(default_config)
+        exec(default_config)
 
 
 for i in range(pages):

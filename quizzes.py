@@ -1,44 +1,6 @@
 import random
 import re
 
-
-# 参数解析器
-def para_parser(para):
-    items = para.split(' ')
-    ops = items[0]
-    ops_parsed = ''
-    in_bracket = False
-    selective_ops = ''
-    # 解析运算运算符
-    for c in ops:
-        # 如果遇到括号就打开括号开关
-        if c in '(（':
-            in_bracket = True
-        # 如果不在括号内就直接添加到解析过的字符串中
-        if not in_bracket:
-            ops_parsed += c
-        # 否则就添加到可选运算符中
-        else:
-            if c not in '()（）':
-                selective_ops += c
-        # 如果遇到右括号就关闭括号开关，从可选运算符中随机选一个并添加到运算符字符串中，同时清空可选运算符字符串
-        if c in ')）':
-            in_bracket = False
-            ops_parsed += random.choice(selective_ops)
-            selective_ops = ''
-
-        # 从第二位开始存储的是运算的范围，数量根据运算符的个数来确定
-        rngs = items[1: 1 + len(ops_parsed)]
-        rngs = [int(item) for item in rngs]
-
-        # 最后一位存储的是权重参数
-        weight = items[-1]
-
-    return ops_parsed, rngs
-
-
-# TODO 要修改代码以提高扩展性
-
 class Quiz:
     def __init__(self):
         self.ops = '+-*/'

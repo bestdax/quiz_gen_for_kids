@@ -33,6 +33,7 @@ if os.path.exists('config'):
             c.seek(0)
             c.truncate()
             c.write(config)
+            exec(config)
 else:
     with open('config', 'w') as c:
         c.write(default_config)

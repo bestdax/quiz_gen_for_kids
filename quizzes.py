@@ -1,24 +1,27 @@
 import random
 import re
 
+
 class Quiz:
     def __init__(self):
         self.ops = '+-*/'
 
-    def quiz_gen(self, paras=None):
+    def quiz_gen(self, rule=None):
         # 如果没有参数传入，打印提示信息
-        if not paras:
+        if not rule:
             print('请在config文件中根据提示输入参数')
 
         else:
             quiz = ''
-            ops, rngs = paras
-            if type(rngs) != list:
-                rngs = [rngs]
-            for i, op in enumerate(ops):
-                if i == 0:
-                    a = random.randint(1, rngs[i] - 1)
-                b = random.randint(1, rngs[i] - 1)
+            steps = len(rule) // 3
+            range_a = int(rule[1])
+            a = random.randint(1, range_a - 1)
+            for i in range(steps):
+                ops = rule[2 + 3 * i]
+                range_b = int(rule[3 + 3 * i])
+                limits = rule[4 + 3 * i]
+                b = random.randint(1, range_b - 1)
+                op = random.choice(ops)
                 # 如果是减法的话，被减数小于减数的话，对调
                 if op == '-':
                     if eval(str(a)) < b:
@@ -29,17 +32,17 @@ class Quiz:
             quiz = quiz.replace('/', '÷') + ' ='
             return quiz
 
-    def bulk_quiz_gen(self, paras=None, qty=100):
+    def bulk_quiz_gen(self, paras):
         if not paras:
             print('请在config文件中根据提示输入参数')
         else:
             quizzes = []
             quiz_no = 1
-            for para in paras:
-                weight = float(para.split(' ')[-1])
+            for rule in paras['rules']:
+                weight = rule[0]
+                qty = paras['global']['qty']
                 for i in range(int(qty * weight)):
-                    paras_of_quiz = para_parser(para)
-                    quiz = f'{quiz_no:3}) ' + self.quiz_gen(paras_of_quiz)
+                    quiz = f'{quiz_no:3}) ' + self.quiz_gen(rule)
                     quizzes.append(quiz)
                     quiz_no += 1
             return quizzes

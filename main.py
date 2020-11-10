@@ -87,15 +87,13 @@ else:
         config = default_config
         c.write(config)
 
-p = parser(config)
-date, pages, mix, qty = p['global']
-print(p['rules'])
-# paras = p.paras[0]['ops'], [int(i) for i in p.paras[0]['values']]
-# for i in range(p.pages):
-#     pdf.add_page()
-#     pdf.set_title('四则运算练习')
-#     pdf.set_date(p.date)
-#     q = Quiz()
-#     quizzes = q.bulk_quiz_gen(paras, qty=q.paras['qty'])
-#     pdf.set_quizzes(quizzes=quizzes)
-# pdf.output('quizzes.pdf', 'F')
+paras = parser(config)
+print(paras['rules'])
+for i in range(paras['global']['pages']):
+    pdf.add_page()
+    pdf.set_title('四则运算练习')
+    pdf.set_date(paras['global']['date'])
+    q = Quiz()
+    quizzes = q.bulk_quiz_gen(paras)
+    pdf.set_quizzes(quizzes=quizzes)
+pdf.output('quizzes.pdf', 'F')

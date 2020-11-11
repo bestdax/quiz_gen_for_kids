@@ -1,4 +1,5 @@
 import re
+import sys
 
 
 def parser(config):
@@ -56,11 +57,11 @@ def blocks_parser(blocks):
     # 获取比重和数值a范围，如果存在就添加到参数列表里
     weight = re.search('比重：(.*)', blocks[0]).group(1)
     a = re.search('数值a范围：(.*)', blocks[0]).group(1)
-    try:
-        weight = float(weight)
-        a = int(a)
-    except ValueError:
-        print('权重参数或者数值a设置出错!')
+    if weight:
+        try:
+            weight = float(weight)
+        except ValueError:
+            print('权重参数或者数值a设置出错!')
 
     if all([weight, a]):
         rule_parsed.append(weight)
@@ -83,8 +84,14 @@ def blocks_parser(blocks):
         for key in limits.keys():
             if limits[key] in ['是', 'True', 'y', 'Yes']:
                 limits[key] = True
+            elif limits[key].isdigit():
+                limits[key] = int(limits[key])
             else:
                 limits[key] = False
+        if not limits['ceiling']:
+            limits['ceiling'] = sys.maxsize
+        if not limits['floor']:
+            limits['floor'] = 0
         if all([weight, a, ops, number]):
             rule_parsed.append(ops)
             rule_parsed.append(number)

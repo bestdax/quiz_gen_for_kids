@@ -88,7 +88,6 @@ else:
         c.write(config)
 
 paras = parser(config)
-print(paras['rules'])
 for i in range(paras['global']['pages']):
     pdf.add_page()
     pdf.set_title('四则运算练习')

@@ -14,19 +14,38 @@ class Quiz:
         else:
             quiz = ''
             steps = len(rule) // 3
-            range_a = int(rule[1])
-            a = random.randint(1, range_a - 1)
+            range_a = rule[1]
+            # 分步进行判断
             for i in range(steps):
                 ops = rule[2 + 3 * i]
-                range_b = int(rule[3 + 3 * i])
+                range_b = rule[3 + 3 * i]
                 limits = rule[4 + 3 * i]
-                b = random.randint(1, range_b - 1)
-                op = random.choice(ops)
-                # 如果是减法的话，被减数小于减数的话，对调
-                if op == '-':
-                    if eval(str(a)) < b:
-                        a, b = b, a
-                quiz = f'{a:2} {op} {b:2}'
+                while True:
+                    # 只有第一步的时候a可以变化
+                    if i == 0:
+                        if self.is_static(range_a):
+                            a = int(range_a[1:])
+                        else:
+                            a = self.rand_gen(int(range_a))
+                    op = random.choice(ops)
+                    if self.is_static(range_b):
+                        b = int(range_b[1:])
+                    else:
+                        b = self.rand_gen(int(range_b))
+                    quiz = self.quiz_formator(a, op, b)
+                    if eval(quiz) < limits['floor']:
+                        continue
+                    if eval(quiz) > limits['ceiling']:
+                        continue
+                    if limits['carry']:
+                        if eval(quiz) // 10 == (a // 10 + b // 10):
+                            continue
+                    if limits['borrow']:
+                        if eval(quiz) // 10 + b // 10 == a // 10:
+                            continue
+                    break
+
+                quiz = self.quiz_formator(a, op, b)
                 a = quiz
             quiz = quiz.replace('*', '×')
             quiz = quiz.replace('/', '÷') + ' ='
@@ -47,11 +66,19 @@ class Quiz:
                     quiz_no += 1
             return quizzes
 
+    def quiz_formator(self, a, op, b):
+        return f'{a:2} {op} {b:2}'
+
+    def rand_gen(self, rng):
+        return random.randint(1, rng - 1)
+
+    # 判断是一个范围还是固定的数
+    def is_static(self, a):
+        if a.startswith('=') and a[1:].isdigit():
+            return True
+        else:
+            return False
+
 
 if __name__ == '__main__':
     q = Quiz()
-    # t = type_paras('表内乘法接10以内加减法')
-    # print(t)
-    # for item in t:
-    #     print(item)
-    print(para_parser('(+-) 100 0.75'))

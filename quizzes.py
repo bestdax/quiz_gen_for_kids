@@ -1,92 +1,83 @@
 import random
 
 
-# 参数解析器
-def para_parser(para):
-    items = para.split(' ')
-    ops = items[0]
-    ops_parsed = ''
-    in_bracket = False
-    selective_ops = ''
-    # 解析运算运算符
-    for c in ops:
-        # 如果遇到括号就打开括号开关
-        if c in '(（':
-            in_bracket = True
-        # 如果不在括号内就直接添加到解析过的字符串中
-        if not in_bracket:
-            ops_parsed += c
-        # 否则就添加到可选运算符中
-        else:
-            if c not in '()（）':
-                selective_ops += c
-        # 如果遇到右括号就关闭括号开关，从可选运算符中随机选一个并添加到运算符字符串中，同时清空可选运算符字符串
-        if c in ')）':
-            in_bracket = False
-            ops_parsed += random.choice(selective_ops)
-            selective_ops = ''
-
-        # 从第二位开始存储的是运算的范围，数量根据运算符的个数来确定
-        rngs = items[1: 1 + len(ops_parsed)]
-        rngs = [int(item) for item in rngs]
-
-        # 最后一位存储的是权重参数
-        weight = items[-1]
-
-    return ops_parsed, rngs
-
-
-# TODO 要修改代码以提高扩展性
-# TODO 需要增加结果范围的设置，进位加和退位减的设置
-
 class Quiz:
     def __init__(self):
         self.ops = '+-*/'
 
-    def quiz_gen(self, paras=None):
+    def quiz_gen(self, rule=None):
         # 如果没有参数传入，打印提示信息
-        if not paras:
+        if not rule:
             print('请在config文件中根据提示输入参数')
 
         else:
             quiz = ''
-            ops, rngs = paras
-            if type(rngs) != list:
-                rngs = [rngs]
-            for i, op in enumerate(ops):
-                if i == 0:
-                    a = random.randint(1, rngs[i] - 1)
-                b = random.randint(1, rngs[i] - 1)
-                # 如果是减法的话，被减数小于减数的话，对调
-                if op == '-':
-                    while eval(str(a)) < b:
-                        b = random.randint(1, rngs[i] - 1)
-                quiz = f'{a:2} {op} {b:2}'
+            steps = len(rule) // 3
+            range_a = rule[1]
+            # 分步进行判断
+            for i in range(steps):
+                ops = rule[2 + 3 * i]
+                range_b = rule[3 + 3 * i]
+                limits = rule[4 + 3 * i]
+                while True:
+                    # 只有第一步的时候a可以变化
+                    if i == 0:
+                        if self.is_static(range_a):
+                            a = int(range_a[1:])
+                        else:
+                            a = self.rand_gen(int(range_a))
+                    op = random.choice(ops)
+                    if self.is_static(range_b):
+                        b = int(range_b[1:])
+                    else:
+                        b = self.rand_gen(int(range_b))
+                    quiz = self.quiz_formator(a, op, b)
+                    if eval(quiz) < limits['floor']:
+                        continue
+                    if eval(quiz) > limits['ceiling']:
+                        continue
+                    if limits['carry']:
+                        if eval(quiz) // 10 == (a // 10 + b // 10):
+                            continue
+                    if limits['borrow']:
+                        if eval(quiz) // 10 + b // 10 == a // 10:
+                            continue
+                    break
+
+                quiz = self.quiz_formator(a, op, b)
                 a = quiz
             quiz = quiz.replace('*', '×')
             quiz = quiz.replace('/', '÷') + ' ='
             return quiz
 
-    def bulk_quiz_gen(self, paras=None, qty=100):
+    def bulk_quiz_gen(self, paras):
         if not paras:
             print('请在config文件中根据提示输入参数')
         else:
             quizzes = []
             quiz_no = 1
-            for para in paras:
-                weight = float(para.split(' ')[-1])
+            for rule in paras['rules']:
+                weight = rule[0]
+                qty = paras['global']['qty']
                 for i in range(int(qty * weight)):
-                    paras_of_quiz = para_parser(para)
-                    quiz = f'{quiz_no:3}) ' + self.quiz_gen(paras_of_quiz)
+                    quiz = f'{quiz_no:3}) ' + self.quiz_gen(rule)
                     quizzes.append(quiz)
                     quiz_no += 1
             return quizzes
 
+    def quiz_formator(self, a, op, b):
+        return f'{a:2} {op} {b:2}'
+
+    def rand_gen(self, rng):
+        return random.randint(1, rng - 1)
+
+    # 判断是一个范围还是固定的数
+    def is_static(self, a):
+        if a.startswith('=') and a[1:].isdigit():
+            return True
+        else:
+            return False
+
 
 if __name__ == '__main__':
     q = Quiz()
-    # t = type_paras('表内乘法接10以内加减法')
-    # print(t)
-    # for item in t:
-    #     print(item)
-    print(para_parser('(+-) 100 0.75'))

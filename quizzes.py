@@ -13,13 +13,13 @@ class Quiz:
 
         else:
             quiz = ''
-            steps = len(rule) // 3
+            steps = len(rule) // 4
             range_a = rule[1]
             # 分步进行判断
             for i in range(steps):
-                ops = rule[2 + 3 * i]
-                range_b = rule[3 + 3 * i]
-                limits = rule[4 + 3 * i]
+                ops = rule[3 + 3 * i]
+                range_b = rule[4 + 3 * i]
+                limits = rule[5 + 3 * i]
                 while True:
                     # 只有第一步的时候a可以变化
                     if i == 0:
@@ -44,11 +44,17 @@ class Quiz:
                         if eval(quiz) // 10 + b // 10 == a // 10:
                             continue
                     break
-
+                c = eval(f'{a}{op}{b}')
+                if not rule[2]:
+                    a = '(  )'
+                if not rule[5]['display']:
+                    b = '(  )'
                 quiz = self.quiz_formator(a, op, b)
                 a = quiz
             quiz = quiz.replace('*', '×')
             quiz = quiz.replace('/', '÷') + ' ='
+            if not rule[2] and not rule[5]['display']:
+                quiz = f'{quiz} {c:3}'
             return quiz
 
     def bulk_quiz_gen(self, paras):

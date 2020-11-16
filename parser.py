@@ -63,15 +63,21 @@ def blocks_parser(blocks):
     # 获取比重和数值a范围，如果存在就添加到参数列表里
     weight = re.search('比重：(.*)', blocks[0]).group(1)
     a = re.search('数值a范围：(.*)', blocks[0]).group(1)
+    display = re.search('显示：(.*)', blocks[0]).group(1)
     if weight:
         try:
             weight = float(weight)
         except ValueError:
             print('权重参数或者数值a设置出错!')
+    if display in ['是', 'True', 'y', 'Yes']:
+        display = True
+    else:
+        display = False
 
     if all([weight, a]):
         rule_parsed.append(weight)
         rule_parsed.append(a)
+        rule_parsed.append(display)
     for block in blocks[1:]:
         ops = re.search('运算符：(.*)', block).group(1)
         number = re.search('数值.*范围：(.*)', block).group(1)
@@ -80,12 +86,15 @@ def blocks_parser(blocks):
         carry = re.search('进位限制：(.*)', block).group(1)
         borrow = re.search('退位限制：(.*)', block).group(1)
         brackets = re.search('是否加括号：(.*)', block).group(1)
+        display = re.search('显示：(.*)', blocks[0]).group(1)
+
         limits = {
             'ceiling': ceiling,
             'floor': floor,
             'carry': carry,
             'borrow': borrow,
-            'brackets': brackets
+            'brackets': brackets,
+            'display': display
         }
         for key in limits.keys():
             if limits[key] in ['是', 'True', 'y', 'Yes']:

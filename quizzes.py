@@ -59,7 +59,7 @@ class Quiz:
             for rule in paras['rules']:
                 weight = rule[0]
                 qty = paras['global']['qty']
-                number_of_digits = len(str(int(qty * weight)))
+                number_of_digits = len(str(qty))
                 for i in range(int(qty * weight)):
                     quiz = f'{quiz_no:{number_of_digits}}) ' + self.quiz_gen(rule)
                     quizzes.append(quiz)

@@ -32,7 +32,7 @@ class PDF(FPDF):
 
     def set_quizzes(self, quizzes):
         start_x, start_y = 15, 50
-        end_x, end_y = 15, 275
+        end_x, end_y = 15, 274
         col_in_a_row = 3
         rows = len(quizzes) // col_in_a_row + 1 if len(quizzes) % col_in_a_row > 0 else len(quizzes) // col_in_a_row
         cell_height = (end_y - start_y) / rows

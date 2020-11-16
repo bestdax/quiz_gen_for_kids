@@ -1,7 +1,7 @@
 **/.DS_Store
 .idea/
 __pycache__/
-quizzes.pdf
+*.pdf
 venv/
 *.pkl
-config
+config*

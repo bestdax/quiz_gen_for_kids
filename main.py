@@ -2,8 +2,8 @@ import os
 from parser import parser
 from pdf import PDF
 from quizzes import Quiz
+import glob
 
-pdf = PDF()
 default_config = '''设置文件版本V0.2
 这个文件中保存的是生成试题的设置，您可以根据自己的需要生成需要的习题。
 说明：
@@ -72,26 +72,29 @@ default_config = '''设置文件版本V0.2
 ###############################################################################
     '''
 # 如果有设置文件就读取并执行没有的话就新建一个
-if os.path.exists('config'):
-    with open('config', 'r+') as c:
-        config = c.read()
-        if 'V0.2' not in config:
-            config = default_config
-            c.seek(0)
-            c.truncate()
-            c.write(config)
-
-else:
+if not os.path.exists('config'):
     with open('config', 'w') as c:
         config = default_config
         c.write(config)
+else:
+    for config_file in glob.glob('config*'):
+        with open(config_file, 'r+') as c:
+            config = c.read()
+            if 'V0.2' not in config:
+                config = default_config
+                c.seek(0)
+                c.truncate()
+                c.write(config)
 
-paras = parser(config)
-for i in range(paras['global']['pages']):
-    pdf.add_page()
-    pdf.set_title('四则运算练习')
-    pdf.set_date(paras['global']['date'])
-    q = Quiz()
-    quizzes = q.bulk_quiz_gen(paras)
-    pdf.set_quizzes(quizzes=quizzes)
-pdf.output('quizzes.pdf', 'F')
+        paras = parser(config)
+        pdf = PDF()
+        user = config_file[7:]
+        for i in range(paras['global']['pages']):
+            pdf.add_page()
+            pdf.set_title('四则运算练习')
+            pdf.set_date(paras['global']['date'])
+            q = Quiz()
+            quizzes = q.bulk_quiz_gen(paras)
+            pdf.set_quizzes(quizzes=quizzes)
+        pdf_filename = f'{user}.pdf' if user else 'quizzes.pdf'
+        pdf.output(f'{pdf_filename}', 'F')

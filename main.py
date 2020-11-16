@@ -24,6 +24,7 @@ default_config = '''设置文件版本V0.2
 - 是否显示日期，可以设置是否显示日期。
 - 每页习题数量，默认值为100。
 
+试题输出文件夹：~/Desktop
 题型混合：否
 页数：1
 是否显示日期：是
@@ -96,5 +97,6 @@ else:
             q = Quiz()
             quizzes = q.bulk_quiz_gen(paras)
             pdf.set_quizzes(quizzes=quizzes)
-        pdf_filename = f'{user}.pdf' if user else 'quizzes.pdf'
+        quiz_dir = paras['global']['quiz_dir']
+        pdf_filename = os.path.join(quiz_dir, f'{user}.pdf' if user else 'quizzes.pdf')
         pdf.output(f'{pdf_filename}', 'F')

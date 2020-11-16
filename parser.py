@@ -1,13 +1,18 @@
 import re
 import sys
+import os
 
 
 def parser(config):
     # 从config里面找到几个必要的全局参数
+    quiz_dir = re.search('试题输出文件夹：(.*)\n', config).group(1).strip()
+    quiz_dir = os.path.expanduser(quiz_dir)
     date = re.search('是否显示日期：(.*)\n', config).group(1).strip()
     pages = re.search('页数：(.*)\n', config).group(1).strip()
     mix = re.search('题型混合：(.*)\n', config).group(1).strip()
     qty = re.search('每页习题数量：(.*)\n', config).group(1).strip()
+    if not quiz_dir:
+        quiz_dir = os.path.expanduser('~/Desktop')
     if date in ['是', 'True']:
         date = True
     else:
@@ -30,6 +35,7 @@ def parser(config):
         pass
 
     paras = {'global': {
+        'quiz_dir': quiz_dir,
         'date': date,
         'qty': qty,
         'pages': pages,

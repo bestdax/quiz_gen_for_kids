@@ -1,4 +1,5 @@
 import random
+from typing import List
 
 
 class Quiz:
@@ -54,7 +55,8 @@ class Quiz:
         if not paras:
             print('请在config文件中根据提示输入参数')
         else:
-            quizzes = []
+            quizzes: List[str] = []
+            mix = paras['global']['mix']
             quiz_no = 1
             for rule in paras['rules']:
                 weight = rule[0]
@@ -64,6 +66,8 @@ class Quiz:
                     quiz = f'{quiz_no:{number_of_digits}}) ' + self.quiz_gen(rule)
                     quizzes.append(quiz)
                     quiz_no += 1
+            if mix:
+                random.shuffle(quizzes)
             return quizzes
 
     def quiz_formator(self, a, op, b):

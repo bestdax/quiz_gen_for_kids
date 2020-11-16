@@ -32,8 +32,11 @@ class PDF(FPDF):
 
     def set_quizzes(self, quizzes):
         start_x, start_y = 15, 50
-        cell_height = 6.6
-        cell_width = 60
+        end_x, end_y = 15, 275
+        col_in_a_row = 3
+        rows = len(quizzes) // col_in_a_row + 1 if len(quizzes) % col_in_a_row > 0 else len(quizzes) // col_in_a_row
+        cell_height = (end_y - start_y) / rows
+        cell_width = 180 / col_in_a_row
         self.set_xy(start_x, start_y)
         self.set_font("dkzt", '', 12)
         for index in range(len(quizzes)):

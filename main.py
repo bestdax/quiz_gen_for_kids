@@ -81,7 +81,7 @@ if not os.path.exists('config'):
         config = default_config
         c.write(config)
 else:
-    for config_file in glob.glob('config*'):
+    for config_file in glob.glob('config*[!py]'):
         with open(config_file, 'r+') as c:
             config = c.read()
             if 'V0.2' not in config:

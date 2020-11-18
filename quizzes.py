@@ -49,7 +49,10 @@ class Quiz:
                     a = '(  )'
                 if not rule[5]['display']:
                     b = '(  )'
-                quiz = self.quiz_formator(a, op, b)
+                if not limits['brackets']:
+                    quiz = self.quiz_formator(a, op, b)
+                else:
+                    quiz = f'({self.quiz_formator(a, op, b)})'
                 a = quiz
             quiz = quiz.replace('*', '×')
             quiz = quiz.replace('/', '÷') + ' ='

@@ -110,6 +110,8 @@ def rand(number_range):
             except ValueError:
                 print('数字范围规则设置出错!')
             else:
+                if a > b:
+                    a, b = b, a
                 return random.randint(a, b)
 
 

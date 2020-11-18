@@ -1,83 +1,81 @@
 import random
+import re
 from typing import List
 
 
-class Quiz:
-    def __init__(self):
-        self.ops = '+-*/'
+def quiz_gen(self, rule=None):
+    # 如果没有参数传入，打印提示信息
+    if not rule:
+        print('请在config文件中根据提示输入参数')
 
-    def quiz_gen(self, rule=None):
-        # 如果没有参数传入，打印提示信息
-        if not rule:
-            print('请在config文件中根据提示输入参数')
-
-        else:
-            quiz = ''
-            steps = len(rule) // 4
-            range_a = rule[1]
-            # 分步进行判断
-            for i in range(steps):
-                ops = rule[3 + 3 * i]
-                range_b = rule[4 + 3 * i]
-                limits = rule[5 + 3 * i]
-                while True:
-                    # 只有第一步的时候a可以变化
-                    if i == 0:
-                        if self.is_static(range_a):
-                            a = int(range_a[1:])
-                        else:
-                            a = self.rand_gen(int(range_a))
-                    op = random.choice(ops)
-                    if self.is_static(range_b):
-                        b = int(range_b[1:])
+    else:
+        quiz = ''
+        steps = len(rule) // 4
+        range_a = rule[1]
+        # 分步进行判断
+        for i in range(steps):
+            ops = rule[3 + 3 * i]
+            range_b = rule[4 + 3 * i]
+            limits = rule[5 + 3 * i]
+            while True:
+                # 只有第一步的时候a可以变化
+                if i == 0:
+                    if self.is_static(range_a):
+                        a = int(range_a[1:])
                     else:
-                        b = self.rand_gen(int(range_b))
-                    quiz = self.quiz_formator(a, op, b)
-                    if eval(quiz) < limits['floor']:
-                        continue
-                    if eval(quiz) > limits['ceiling']:
-                        continue
-                    if limits['carry']:
-                        if eval(quiz) // 10 == (a // 10 + b // 10):
-                            continue
-                    if limits['borrow']:
-                        if eval(quiz) // 10 + b // 10 == a // 10:
-                            continue
-                    break
-                c = eval(f'{a}{op}{b}')
-                if not rule[2]:
-                    a = '(  )'
-                if not rule[5]['display']:
-                    b = '(  )'
-                if not limits['brackets']:
-                    quiz = self.quiz_formator(a, op, b)
+                        a = self.rand(int(range_a))
+                op = random.choice(ops)
+                if self.is_static(range_b):
+                    b = int(range_b[1:])
                 else:
-                    quiz = f'({self.quiz_formator(a, op, b)})'
-                a = quiz
-            quiz = quiz.replace('*', '×')
-            quiz = quiz.replace('/', '÷') + ' ='
-            if not rule[2] and not rule[5]['display']:
-                quiz = f'{quiz} {c:3}'
-            return quiz
+                    b = self.rand(int(range_b))
+                quiz = self.quiz_formator(a, op, b)
+                if eval(quiz) < limits['floor']:
+                    continue
+                if eval(quiz) > limits['ceiling']:
+                    continue
+                if limits['carry']:
+                    if eval(quiz) // 10 == (a // 10 + b // 10):
+                        continue
+                if limits['borrow']:
+                    if eval(quiz) // 10 + b // 10 == a // 10:
+                        continue
+                break
+            c = eval(f'{a}{op}{b}')
+            if not rule[2]:
+                a = '(  )'
+            if not rule[5]['display']:
+                b = '(  )'
+            if not limits['brackets']:
+                quiz = self.quiz_formator(a, op, b)
+            else:
+                quiz = f'({self.quiz_formator(a, op, b)})'
+            a = quiz
+        quiz = quiz.replace('*', '×')
+        quiz = quiz.replace('/', '÷') + ' ='
+        if not rule[2] and not rule[5]['display']:
+            quiz = f'{quiz} {c:3}'
+        return quiz
 
-    def bulk_quiz_gen(self, paras):
-        if not paras:
-            print('请在config文件中根据提示输入参数')
-        else:
-            quizzes: List[str] = []
-            mix = paras['global']['mix']
-            quiz_no = 1
-            for rule in paras['rules']:
-                weight = rule[0]
-                qty = paras['global']['qty']
-                number_of_digits = len(str(qty))
-                for i in range(int(qty * weight)):
-                    quiz = f'{quiz_no:{number_of_digits}}) ' + self.quiz_gen(rule)
-                    quizzes.append(quiz)
-                    quiz_no += 1
-            if mix:
-                random.shuffle(quizzes)
-            return quizzes
+
+def bulk_quiz_gen(self, paras):
+    if not paras:
+        print('请在config文件中根据提示输入参数')
+    else:
+        quizzes: List[str] = []
+        mix = paras['global']['mix']
+        quiz_no = 1
+        for rule in paras['rules']:
+            weight = rule[0]
+            qty = paras['global']['qty']
+            number_of_digits = len(str(qty))
+            for i in range(int(qty * weight)):
+                quiz = f'{quiz_no:{number_of_digits}}) ' + self.quiz_gen(rule)
+                quizzes.append(quiz)
+                quiz_no += 1
+        if mix:
+            random.shuffle(quizzes)
+        return quizzes
 
     def quiz_formator(self, a, op, b):
         return f'{a:2} {op} {b:2}'
@@ -93,5 +91,31 @@ class Quiz:
             return False
 
 
+def rand(number_range):
+    if type(number_range) == int:
+        return random.randint(0, number_range)
+    elif type(number_range) == str:
+        if number_range.startswith('='):
+            try:
+                number = int(number_range[1:])
+            except ValueError:
+                print('数字范围规则设置出错!')
+            else:
+                return number
+        elif re.search(r'\d+, *\d+', number_range):
+            a, b = re.findall(r'(\d+), *(\d+)', number_range)[0]
+            try:
+                a = int(a)
+                b = int(b)
+            except ValueError:
+                print('数字范围规则设置出错!')
+            else:
+                return random.randint(a, b)
+
+
+def quiz_gen_new(rule):
+    pass
+
+
 if __name__ == '__main__':
-    q = Quiz()
+    pass

@@ -1,99 +1,44 @@
 import random
 import re
+import sys
 from typing import List
 
 
-def quiz_gen(self, rule=None):
-    # 如果没有参数传入，打印提示信息
-    if not rule:
-        print('请在config文件中根据提示输入参数')
-
-    else:
-        quiz = ''
-        steps = len(rule) // 4
-        range_a = rule[1]
-        # 分步进行判断
-        for i in range(steps):
-            ops = rule[3 + 3 * i]
-            range_b = rule[4 + 3 * i]
-            limits = rule[5 + 3 * i]
-            while True:
-                # 只有第一步的时候a可以变化
-                if i == 0:
-                    if self.is_static(range_a):
-                        a = int(range_a[1:])
-                    else:
-                        a = self.rand(int(range_a))
-                op = random.choice(ops)
-                if self.is_static(range_b):
-                    b = int(range_b[1:])
-                else:
-                    b = self.rand(int(range_b))
-                quiz = self.quiz_formator(a, op, b)
-                if eval(quiz) < limits['floor']:
-                    continue
-                if eval(quiz) > limits['ceiling']:
-                    continue
-                if limits['carry']:
-                    if eval(quiz) // 10 == (a // 10 + b // 10):
-                        continue
-                if limits['borrow']:
-                    if eval(quiz) // 10 + b // 10 == a // 10:
-                        continue
-                break
-            c = eval(f'{a}{op}{b}')
-            if not rule[2]:
-                a = '(  )'
-            if not rule[5]['display']:
-                b = '(  )'
-            if not limits['brackets']:
-                quiz = self.quiz_formator(a, op, b)
-            else:
-                quiz = f'({self.quiz_formator(a, op, b)})'
-            a = quiz
-        quiz = quiz.replace('*', '×')
-        quiz = quiz.replace('/', '÷') + ' ='
-        if not rule[2] and not rule[5]['display']:
-            quiz = f'{quiz} {c:3}'
-        return quiz
+def bulk_quiz_gen(config):
+    rules = config['rules']
+    quizzes: List[str] = []
+    mix = config['global']['mix']
+    quiz_no = 1
+    for rule in rules:
+        weight = rule['weight']
+        qty = config['global']['qty']
+        number_of_digits = len(str(qty))
+        for i in range(int(qty * weight)):
+            quiz = f'{quiz_no:{number_of_digits}}) ' + quiz_gen(rule)
+            quizzes.append(quiz)
+            quiz_no += 1
+    if mix:
+        random.shuffle(quizzes)
+    return quizzes
 
 
-def bulk_quiz_gen(self, paras):
-    if not paras:
-        print('请在config文件中根据提示输入参数')
-    else:
-        quizzes: List[str] = []
-        mix = paras['global']['mix']
-        quiz_no = 1
-        for rule in paras['rules']:
-            weight = rule[0]
-            qty = paras['global']['qty']
-            number_of_digits = len(str(qty))
-            for i in range(int(qty * weight)):
-                quiz = f'{quiz_no:{number_of_digits}}) ' + self.quiz_gen(rule)
-                quizzes.append(quiz)
-                quiz_no += 1
-        if mix:
-            random.shuffle(quizzes)
-        return quizzes
-
-    def quiz_formator(self, a, op, b):
-        return f'{a:2} {op} {b:2}'
-
-    def rand_gen(self, rng):
-        return random.randint(1, rng - 1)
-
-    # 判断是一个范围还是固定的数
-    def is_static(self, a):
-        if a.startswith('=') and a[1:].isdigit():
-            return True
-        else:
-            return False
+def quiz_formator(a, op, b):
+    return f'{a:2} {op} {b:2}'
 
 
+def rand_gen(rng):
+    return random.randint(1, rng - 1)
+
+
+###############################################################################
+# 根据数字范围的规则产生随机数
+# 范围是一个整数的话就产生从0到这个数的随机数
+# 范围为'=30'就输出30
+# 范围为'20, 30'就输出20到30(包含首尾)的随机数。
+###############################################################################
 def rand(number_range):
     if type(number_range) == int:
-        return random.randint(0, number_range)
+        return random.randint(0, number_range - 1)
     elif type(number_range) == str:
         if number_range.startswith('='):
             try:
@@ -113,11 +58,78 @@ def rand(number_range):
                 if a > b:
                     a, b = b, a
                 return random.randint(a, b)
+    else:
+        print('数字范围规则设置出错!')
 
 
-def quiz_gen_new(rule):
-    pass
+def is_formula(formula):
+    if re.search(r'\d+ *[+\-*/] *\d+ *', formula):
+        return True
+    else:
+        return False
+
+
+def quiz_gen(rule):
+    quiz_components = []
+    for n, step in enumerate(rule['steps']):
+        limits = step['limits']
+        while True:
+            if n == 0:
+                a = rand(rule['first_number']['range'])
+            op = random.choice(step['operators'])
+            b = rand(step['number']['range'])
+            quiz = quiz_formator(a, op, b)
+            if not limits['floor']:
+                limits['floor'] = 0
+            if eval(quiz) < limits['floor']:
+                continue
+            if not limits['ceiling']:
+                limits['ceiling'] = sys.maxsize
+            if eval(quiz) > limits['ceiling']:
+                continue
+            if limits['carry']:
+                if eval(quiz) // 10 == (a // 10 + b // 10):
+                    continue
+            if limits['borrow']:
+                if eval(quiz) // 10 + b // 10 == a // 10:
+                    continue
+            break
+        if limits['brackets']:
+            quiz_components.append('(')
+        if n == 0:
+            if rule['first_number']['display']:
+                quiz_components.append(str(a))
+            else:
+                quiz_components.append('(  )')
+        quiz_components.append(op)
+        if step['number']['display']:
+            quiz_components.append(str(b))
+        else:
+            quiz_components.append('(  )')
+        if limits['brackets']:
+            quiz_components.append(')')
+        a = eval(quiz)
+    quiz_components.append('=')
+    if rule['show_answer']:
+        quiz_components.append(a)
+    quiz = ''
+    for item in quiz_components:
+        if item in '()':
+            quiz += item
+        elif item in '+-*/=':
+            quiz += f'{item}'
+        else:
+            quiz += f'{item:2}'
+
+    quiz = quiz.replace('*', '×')
+    quiz = quiz.replace('/', '÷')
+    return quiz
 
 
 if __name__ == '__main__':
-    pass
+    import yaml
+
+    with open('config.yml', 'r') as c:
+        config = yaml.load(c, Loader=yaml.Loader)
+    rules = config['rules']
+    print(quiz_gen_new(rules[0]))

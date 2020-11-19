@@ -1,7 +1,6 @@
 **/.DS_Store
 .idea/
 __pycache__/
-*.pdf
 venv/
 *.pkl
 config*

@@ -12,7 +12,7 @@ global: # 全局变量
   pages: 1 # 生成PDF文件的页数
   show_date: true # 是否显示日期
   qty: 50 # 每页试题的数量
-  quiz_dir: ~/Desktop # 输入PDF文件的目录
+  quiz_dir: ~/Desktop # 输出PDF文件的目录
 rules: # 口算题生成规则
   -
     weight: 1 # 如果有多个规则，每个规则生成试题所占的百分比，1为100%

@@ -8,17 +8,17 @@ def bulk_quiz_gen(config):
     rules = config['rules']
     quizzes: List[str] = []
     mix = config['global']['mix']
-    quiz_no = 1
+    qty = config['global']['qty']
+    number_of_digits = len(str(qty))
     for rule in rules:
         weight = rule['weight']
-        qty = config['global']['qty']
-        number_of_digits = len(str(qty))
         for i in range(int(qty * weight)):
-            quiz = f'{quiz_no:{number_of_digits}}) ' + quiz_gen(rule)
+            quiz = quiz_gen(rule)
             quizzes.append(quiz)
-            quiz_no += 1
     if mix:
         random.shuffle(quizzes)
+    for i in range(qty):
+        quizzes[i] = f'{i+1:{number_of_digits}}) {quizzes[i]}'
     return quizzes
 
 
@@ -37,6 +37,14 @@ def rand_gen(rng):
 # 范围为'20, 30'就输出20到30(包含首尾)的随机数。
 ###############################################################################
 def rand(number_range):
+    """
+    根据数字范围的规则产生随机数
+    范围是一个整数的话就产生从0到这个数的随机数
+    范围为'=30'就输出30
+    范围为'20, 30'就输出20到30(包含首尾)的随机数。
+    :param number_range:
+    :return: 按照规则生成的随机数
+    """
     if type(number_range) == int:
         return random.randint(0, number_range - 1)
     elif type(number_range) == str:
@@ -132,4 +140,4 @@ if __name__ == '__main__':
     with open('config.yml', 'r') as c:
         config = yaml.load(c, Loader=yaml.Loader)
     rules = config['rules']
-    print(quiz_gen_new(rules[0]))
+    print(quiz_gen(rules[0]))

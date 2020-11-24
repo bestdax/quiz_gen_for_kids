@@ -10,9 +10,15 @@ def bulk_quiz_gen(config):
     mix = config['global']['mix']
     qty = config['global']['qty']
     number_of_digits = len(str(qty))
-    for rule in rules:
+    quiz_count = 0
+    for n, rule in enumerate(rules):
         weight = rule['weight']
-        for i in range(int(qty * weight)):
+        if n != len(rules) - 1:
+            qty_of_type = int(qty * weight)
+            quiz_count += qty_of_type
+        else:
+            qty_of_type = qty - quiz_count
+        for i in range(qty_of_type):
             quiz = quiz_gen(rule)
             quizzes.append(quiz)
     if mix:
@@ -122,10 +128,10 @@ def quiz_gen(rule):
         quiz_components.append(a)
     quiz = ''
     for item in quiz_components:
-        if item in '()':
+        if str(item) in '()':
             quiz += item
-        elif item in '+-*/=':
-            quiz += f'{item}'
+        elif str(item) in '+-*/=':
+            quiz += f' {item} '
         else:
             quiz += f'{item:2}'
 

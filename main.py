@@ -1,11 +1,9 @@
 import os
 from pdf import PDF
 from quizzes import bulk_quiz_gen
-import yaml
+from config import config
 
-with open('config.yml', 'r') as f:
-    configs = [config for config in yaml.load_all(f, Loader=yaml.Loader)]
-
+configs = config()
 for config in configs:
     pdf = PDF()
     user = config['user']

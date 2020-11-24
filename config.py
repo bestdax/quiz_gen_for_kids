@@ -17,7 +17,7 @@ def config():
                       'rules': [{'first_number': {'display': True, 'range': 100},
                                  'show_answer': False,
                                  'steps': [{'limits': {'borrow': None,
-                                                       'brackets': True,
+                                                       'brackets': None,
                                                        'carry': None,
                                                        'ceiling': None,
                                                        'floor': None},

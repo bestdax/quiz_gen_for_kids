@@ -131,7 +131,7 @@ def quiz_gen(rule):
         if str(item) in '()':
             quiz += item
         elif str(item) in '+-*/=':
-            quiz += f' {item} '
+            quiz += f'{item}'
         else:
             quiz += f'{item:2}'
 

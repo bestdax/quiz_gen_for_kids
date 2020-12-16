@@ -3,7 +3,7 @@ import os
 
 
 def config():
-    if os.path.exists('config.yml'):
+    if os.path.exists('cfg.yml'):
         with open('cfg.yml', 'r') as f:
             configs = [cfg for cfg in yaml.load_all(f, Loader=yaml.Loader)]
         return configs

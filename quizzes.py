@@ -4,11 +4,11 @@ import sys
 from typing import List
 
 
-def bulk_quiz_gen(config):
-    rules = config['rules']
+def bulk_quiz_gen(cfg):
+    rules = cfg['rules']
     quizzes: List[str] = []
-    mix = config['global']['mix']
-    qty = config['global']['qty']
+    mix = cfg['global']['mix']
+    qty = cfg['global']['qty']
     number_of_digits = len(str(qty))
     quiz_count = 0
     for n, rule in enumerate(rules):
@@ -106,6 +106,9 @@ def quiz_gen(rule):
                     continue
             if limits['borrow']:
                 if eval(quiz) // 10 + b // 10 == a // 10:
+                    continue
+            if op == '/' and (not limits['remainder']):
+                if eval(quiz) != (a // b):
                     continue
             break
         if limits['brackets']:

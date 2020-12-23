@@ -5,8 +5,8 @@ import os
 def config():
     if os.path.exists('cfg.yml'):
         with open('cfg.yml', 'r') as f:
-            configs = [cfg for cfg in yaml.load_all(f, Loader=yaml.Loader)]
-        return configs
+            config =  yaml.load(f, Loader=yaml.Loader)
+        return config
     else:
         with open('cfg.yml', 'w') as f:
             cfg = {'global': {'mix': False,
@@ -28,3 +28,7 @@ def config():
                    'user': 'default'}
             yaml.dump(cfg, f)
             return [cfg]
+
+def write_cfg(cfg):
+    with open('cfg.yml', 'w') as f:
+        yaml.dump(cfg, f)

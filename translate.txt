@@ -24,3 +24,6 @@ weight 权重
 rule_setting 算式规则设置
 global_setting 全局设置
 None 无
+gen_quiz 生成试题
+example 示例
+refresh 刷新

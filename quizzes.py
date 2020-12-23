@@ -1,14 +1,32 @@
+import os
 import random
 import re
 import sys
 from typing import List
 
+from pdf import PDF
 
-def bulk_quiz_gen(cfg):
-    rules = cfg['rules']
+
+def gen_pdf_quiz(cfg):
+    for user in cfg:
+        pdf = PDF()
+        for i in range(cfg[user]['global']['pages']):
+            pdf.add_page()
+            pdf.set_title('四则运算练习')
+            pdf.set_date(cfg[user]['global']['show_date'])
+            quizzes = bulk_quiz_gen(cfg[user])
+            pdf.set_quizzes(quizzes=quizzes)
+        quiz_dir = cfg[user]['global']['quiz_dir']
+        quiz_dir = os.path.expanduser(quiz_dir)
+        pdf_filename = os.path.join(quiz_dir, f'{user}.pdf' if user else 'quizzes.pdf')
+        pdf.output(f'{pdf_filename}', 'F')
+
+
+def bulk_quiz_gen(user):
+    rules = user['rules']
     quizzes: List[str] = []
-    mix = cfg['global']['mix']
-    qty = cfg['global']['qty']
+    mix = user['global']['mix']
+    qty = user['global']['qty']
     number_of_digits = len(str(qty))
     quiz_count = 0
     for n, rule in enumerate(rules):
@@ -24,7 +42,7 @@ def bulk_quiz_gen(cfg):
     if mix:
         random.shuffle(quizzes)
     for i in range(qty):
-        quizzes[i] = f'{i+1:{number_of_digits}}) {quizzes[i]}'
+        quizzes[i] = f'{i + 1:{number_of_digits}}) {quizzes[i]}'
     return quizzes
 
 
@@ -94,12 +112,16 @@ def quiz_gen(rule):
             b = rand(step['number']['range'])
             quiz = quiz_formator(a, op, b)
             if not limits['floor']:
-                limits['floor'] = 0
-            if eval(quiz) < limits['floor']:
+                floor = 0
+            else:
+                floor = limits['floor']
+            if eval(quiz) < floor:
                 continue
             if not limits['ceiling']:
-                limits['ceiling'] = sys.maxsize
-            if eval(quiz) > limits['ceiling']:
+                ceiling = sys.maxsize
+            else:
+                ceiling = limits['ceiling']
+            if eval(quiz) > ceiling:
                 continue
             if limits['carry']:
                 if eval(quiz) // 10 == (a // 10 + b // 10):

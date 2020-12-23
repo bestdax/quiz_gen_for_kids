@@ -46,6 +46,13 @@ def bulk_quiz_gen(user):
     return quizzes
 
 
+def evaluate(quiz):
+    try:
+        return eval(quiz)
+    except ZeroDivisionError:
+        return float('nan')
+
+
 def quiz_formator(a, op, b):
     return f'{a:2} {op} {b:2}'
 
@@ -115,22 +122,22 @@ def quiz_gen(rule):
                 floor = 0
             else:
                 floor = limits['floor']
-            if eval(quiz) < floor:
+            if evaluate(quiz) < floor:
                 continue
             if not limits['ceiling']:
                 ceiling = sys.maxsize
             else:
                 ceiling = limits['ceiling']
-            if eval(quiz) > ceiling:
+            if evaluate(quiz) > ceiling:
                 continue
             if limits['carry']:
-                if eval(quiz) // 10 == (a // 10 + b // 10):
+                if evaluate(quiz) // 10 == (a // 10 + b // 10):
                     continue
             if limits['borrow']:
-                if eval(quiz) // 10 + b // 10 == a // 10:
+                if evaluate(quiz) // 10 + b // 10 == a // 10:
                     continue
             if op == '/' and (not limits['remainder']):
-                if eval(quiz) != (a // b):
+                if evaluate(quiz) != (a // b):
                     continue
             break
         if limits['brackets']:
@@ -147,7 +154,7 @@ def quiz_gen(rule):
             quiz_components.append('(  )')
         if limits['brackets']:
             quiz_components.append(')')
-        a = eval(quiz)
+        a = evaluate(quiz)
     quiz_components.append('=')
     if rule['show_answer']:
         quiz_components.append(a)

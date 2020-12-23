@@ -89,7 +89,7 @@ class MainWindow(QWidget):
                 rule_container_layout = QGridLayout()
                 container.setLayout(rule_container_layout)
                 rule_tab_widget.addTab(container, f"{translate('rule')}{n + 1}")
-                container.name = f"rule {n+1}"
+                container.name = f"rule {n + 1}"
 
                 example_label = QLabel(translate('example'))
                 example_content_label = QLabel(quiz_gen(rule))
@@ -102,11 +102,25 @@ class MainWindow(QWidget):
                 refresh_button.clicked.connect(self.onRefresh)
 
                 widgets = self.build_rule_widgets(rule)
-                for row in range(len(widgets) // 4 + 1):
-                    for col in range(4):
-                        index = row * 4 + col
-                        if index < len(widgets):
-                            rule_container_layout.addWidget(widgets[4 * row + col], row + 1, col)
+                row, col = 1, 0
+                for widget in widgets:
+                    span = 1
+                    one_line_items = ['weight', 'operators', 'show_answer']
+                    for item in one_line_items:
+                        if widget.name.endswith(item):
+                            span = 3
+                    rule_container_layout.addWidget(widget, row, col, 1, span)
+                    col += span
+                    if widget.name.endswith('remainder'):
+                        sep = self.setup_separator()
+                        row += 1
+                        col = 0
+                        span = 4
+                        rule_container_layout.addWidget(sep, row, col, 1, span)
+                        row += 1
+                    if col == 4:
+                        col = 0
+                        row += 1
 
     def add_widget(self, key, value):
         """
@@ -116,7 +130,7 @@ class MainWindow(QWidget):
         """
         name_of_label = translate(key.split()[-1])
         label = QLabel(name_of_label)
-        label.name = key
+        label.name = key + ' label'
         if isinstance(value, bool):
             widget = QComboBox()
             widget.name = key
@@ -134,6 +148,7 @@ class MainWindow(QWidget):
     def build_rule_widgets(self, rule):
         widgets = []
         sequence = ['weight',
+                    'show_answer',
                     {'first_number': ['range', 'display']},
                     {'steps': ['operators', 'number', 'limits']}]
         for key in sequence:
@@ -164,9 +179,10 @@ class MainWindow(QWidget):
                             else:
                                 subkey = value
                                 content = step[subkey]
-                                label, widget = self.add_widget(subkey, content)
+                                label, widget = self.add_widget(f'steps {n} {subkey}', content)
                                 widgets.append(label)
                                 widgets.append(widget)
+
             else:
                 label, widget = self.add_widget(key, rule[key])
                 widgets.append(label)
@@ -181,6 +197,13 @@ class MainWindow(QWidget):
             combobox.setCurrentIndex(0)
         else:
             combobox.setCurrentIndex(1)
+
+    def setup_separator(self):
+        sep = QFrame()
+        sep.setFrameShape(QFrame.HLine)
+        sep.setFrameShadow(QFrame.Sunken)
+        sep.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        return sep
 
     def setup_buttons(self):
         gen_button = QPushButton(translate('gen_quiz'))
@@ -202,9 +225,12 @@ class MainWindow(QWidget):
             rule = self.config[user]['rules'][rule_index]
             if isinstance(sender, QLineEdit):
                 try:
-                    value = eval(sender.text())
-                except NameError:
-                    value = sender.text()
+                    value = int(sender.text())
+                except ValueError:
+                    try:
+                        value = float(sender.text())
+                    except ValueError:
+                        value = sender.text()
             else:
                 value = translate(sender.currentText())
 
@@ -216,7 +242,9 @@ class MainWindow(QWidget):
                     target += f'["{item}"]'
             exec(target + '= value')
 
-        write_cfg(self.config)
+        if self.validator(sender):
+            write_cfg(self.config)
+            self.onRefresh()
 
     def onRefresh(self):
         sender = self.sender()
@@ -228,10 +256,46 @@ class MainWindow(QWidget):
             if widget.objectName() == 'example':
                 widget.setText(quiz)
 
+    @staticmethod
+    def validator(widget):
+        if isinstance(widget, QLineEdit):
+            text = widget.text()
+            if widget.name.endswith('range'):
+                if re.search(r'^\d+$', text):
+                    if eval(text) == 0:
+                        widget.setText('1')
+                    return True
+                elif re.search(r'^=\d+$', text):
+                    return True
+                elif re.search(r'^\d+, *\d+', text):
+                    return True
+                else:
+                    return False
+            if widget.name.endswith('ceiling') or widget.name.endswith('floor'):
+                # noinspection PyComparisonWithNone
+                if re.search(r'\d+', text) or text == '' or translate(text) == None:
+                    return True
+                else:
+                    return False
+            if widget.name.endswith('weight'):
+                if re.search(r"^[-+]?\d*\.\d+$|^\d+$", text):
+                    if 0 <= eval(text) <= 1:
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+            if widget.name.endswith('operators'):
+                for c in text:
+                    if c not in '+-*/':
+                        return False
+                return True
+        else:
+            return True
+
 
 def on_user_button(self):
     self.close()
-
 
 
 if __name__ == '__main__':

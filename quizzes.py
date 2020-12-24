@@ -137,6 +137,8 @@ def quiz_gen(rule):
                 if evaluate(quiz) // 10 + b // 10 == a // 10:
                     continue
             if op == '/' and (not limits['remainder']):
+                if b == 0:
+                    continue
                 if evaluate(quiz) != (a // b):
                     continue
             break

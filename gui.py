@@ -6,7 +6,7 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QGroupBox, QCheckBox, QPushButton, QGridLayout, \
     QTabWidget, QLabel, QComboBox, QLineEdit, QHBoxLayout, QSpacerItem, QSizePolicy, QFrame
 from PyQt5.Qt import Qt
-from config import config, write_cfg
+from config import config, write_cfg, add_step, rm_step
 from quizzes import quiz_gen, gen_pdf_quiz
 
 
@@ -61,8 +61,7 @@ class MainWindow(QWidget):
                 label, widget = self.add_widget(key, self.config[user]['global'][key])
                 if widget.name == 'quiz_dir':
                     widget.setDisabled(True)
-                widgets.append(label)
-                widgets.append(widget)
+                widgets.extend([label, widget])
             for row in range(3):
                 for col in range(4):
                     index = row * 4 + col
@@ -74,7 +73,7 @@ class MainWindow(QWidget):
                             groupbox_layout.addWidget(widget, row, col)
 
     def set_rules(self):
-        # 算式规则设置区
+        # quiz rule setting
         for n, tab in enumerate(self.tabs):
             rule_tab_widget = QTabWidget()
             rule_tab_layout = QGridLayout()
@@ -89,38 +88,58 @@ class MainWindow(QWidget):
                 rule_container_layout = QGridLayout()
                 container.setLayout(rule_container_layout)
                 rule_tab_widget.addTab(container, f"{translate('rule')}{n + 1}")
-                container.name = f"rule {n + 1}"
+                container.name = f"rule {n}"
+                widgets = []
 
                 example_label = QLabel(translate('example'))
                 example_content_label = QLabel(quiz_gen(rule))
                 example_content_label.setObjectName('example')
-                rule_container_layout.addWidget(example_label, 0, 0)
-                rule_container_layout.addWidget(example_content_label, 0, 1, 1, 2)
+                widgets.append(example_label)
+                widgets.append(example_content_label)
 
                 refresh_button = QPushButton(translate('refresh'))
                 rule_container_layout.addWidget(refresh_button, 0, 3)
                 refresh_button.clicked.connect(self.onRefresh)
+                widgets.append(refresh_button)
 
-                widgets = self.build_rule_widgets(rule)
-                row, col = 1, 0
-                for widget in widgets:
-                    span = 1
-                    one_line_items = ['weight', 'operators', 'show_answer']
-                    for item in one_line_items:
-                        if widget.name.endswith(item):
-                            span = 3
-                    rule_container_layout.addWidget(widget, row, col, 1, span)
-                    col += span
-                    if widget.name.endswith('remainder'):
-                        sep = self.setup_separator()
-                        row += 1
-                        col = 0
-                        span = 4
-                        rule_container_layout.addWidget(sep, row, col, 1, span)
-                        row += 1
-                    if col == 4:
-                        col = 0
-                        row += 1
+                # build rule widgets and put them into correct positions
+                widgets.extend(self.build_rule_widgets(rule))
+
+                # add buttons to add and delete steps
+                add_step_button = QPushButton(translate('add_step'))
+                add_step_button.clicked.connect(self.on_add_step)
+                rm_step_button = QPushButton(translate('rm_step'))
+                rm_step_button.clicked.connect(self.on_rm_step)
+                widgets.append(add_step_button)
+                widgets.append(rm_step_button)
+                container.widgets = widgets
+                self.lay_rule_widgets(rule_container_layout, widgets)
+
+    def lay_rule_widgets(self, layout, widgets):
+        layout.addWidget(widgets[0], 0, 0)
+        layout.addWidget(widgets[1], 0, 1, 1, 2)
+        layout.addWidget(widgets[2], 0, 3)
+        row, col = 1, 0
+        for widget in widgets[3:-2]:
+            span = 1
+            one_line_items = ['weight', 'operators', 'show_answer']
+            for item in one_line_items:
+                if widget.name.endswith(item):
+                    span = 3
+            layout.addWidget(widget, row, col, 1, span)
+            col += span
+            if widget.name.endswith('remainder'):
+                sep = self.setup_separator()
+                row += 1
+                col = 0
+                span = 4
+                layout.addWidget(sep, row, col, 1, span)
+                row += 1
+            if col == 4:
+                col = 0
+                row += 1
+        layout.addWidget(widgets[-2], row, 0)
+        layout.addWidget(widgets[-1], row, 1)
 
     def add_widget(self, key, value):
         """
@@ -134,7 +153,6 @@ class MainWindow(QWidget):
         if isinstance(value, bool):
             widget = QComboBox()
             widget.name = key
-            print(widget.currentText())
             self.setup_combo_and_default(widget, translate(str(value)))
             widget.currentIndexChanged.connect(self.onChange)
         else:
@@ -158,35 +176,15 @@ class MainWindow(QWidget):
                         first_number_key = value
                         content = rule['first_number'][value]
                         label, widget = self.add_widget('first_number ' + first_number_key, content)
-                        widgets.append(label)
-                        widgets.append(widget)
+                        widgets.extend([label, widget])
                 if 'steps' in key:
                     for n, step in enumerate(rule['steps']):
-                        for value in key['steps']:
-                            if value == 'limits':
-                                for limit in step['limits']:
-                                    limit_key = limit
-                                    content = step['limits'][limit]
-                                    label, widget = self.add_widget(f'steps {n} limits {limit_key}', content)
-                                    widgets.append(label)
-                                    widgets.append(widget)
-                            elif value == 'number':
-                                for number_key in ['range', 'display']:
-                                    content = step['number'][number_key]
-                                    label, widget = self.add_widget(f'steps {n} number {number_key}', content)
-                                    widgets.append(label)
-                                    widgets.append(widget)
-                            else:
-                                subkey = value
-                                content = step[subkey]
-                                label, widget = self.add_widget(f'steps {n} {subkey}', content)
-                                widgets.append(label)
-                                widgets.append(widget)
+                        step_widgets = self.setup_step_widgets(step, n)
+                        widgets.extend(step_widgets)
 
             else:
                 label, widget = self.add_widget(key, rule[key])
-                widgets.append(label)
-                widgets.append(widget)
+                widgets.extend([label, widget])
 
         return widgets
 
@@ -221,7 +219,7 @@ class MainWindow(QWidget):
                 self.config[user]['global'][sender.name] = translate(sender.currentText())
         else:
             user = sender.parent().parent().parent().parent().name
-            rule_index = int(sender.parent().name.split()[1]) - 1
+            rule_index = int(sender.parent().name.split()[1])
             rule = self.config[user]['rules'][rule_index]
             if isinstance(sender, QLineEdit):
                 try:
@@ -249,7 +247,7 @@ class MainWindow(QWidget):
     def onRefresh(self):
         sender = self.sender()
         user = sender.parent().parent().parent().parent().name
-        rule_index = int(sender.parent().name.split()[1]) - 1
+        rule_index = int(sender.parent().name.split()[1])
         rule = self.config[user]['rules'][rule_index]
         quiz = quiz_gen(rule)
         for widget in sender.parent().children():
@@ -286,12 +284,71 @@ class MainWindow(QWidget):
                 else:
                     return False
             if widget.name.endswith('operators'):
-                for c in text:
-                    if c not in '+-*/':
-                        return False
-                return True
+                if text:
+                    for c in text:
+                        if c not in '+-*/':
+                            return False
+                    return True
+                else:
+                    return False
         else:
             return True
+
+    def setup_step_widgets(self, step, n):
+        widgets = []
+        sequence = ['operators', 'number', 'limits']
+        for key in sequence:
+            if key == 'limits':
+                for limit in step['limits']:
+                    content = step['limits'][limit]
+                    label, widget = self.add_widget(f'steps {n} limits {limit}', content)
+                    widgets.extend([label, widget])
+            elif key == 'number':
+                for number_key in ['range', 'display']:
+                    content = step['number'][number_key]
+                    label, widget = self.add_widget(f'steps {n} number {number_key}', content)
+                    widgets.extend([label, widget])
+            else:
+                content = step[key]
+                label, widget = self.add_widget(f'steps {n} {key}', content)
+                widgets.extend([label, widget])
+        return widgets
+
+    def on_add_step(self):
+        sender = self.sender()
+        user = sender.parent().parent().parent().parent().name
+        rule_index = int(sender.parent().name.split()[1])
+        rule = self.config[user]['rules'][rule_index]
+        widgets = sender.parent().widgets
+
+        step = add_step(rule)
+        write_cfg(self.config)
+        step_widgets = self.setup_step_widgets(step, len(rule['steps']))
+        widgets = widgets[:-2] + step_widgets + widgets[-2:]
+        sender.parent().widgets = widgets
+        self.lay_rule_widgets(sender.parent().layout(), widgets)
+        self.onRefresh()
+
+    def on_rm_step(self):
+        sender = self.sender()
+        user = sender.parent().parent().parent().parent().name
+        rule_index = int(sender.parent().name.split()[1])
+        rule = self.config[user]['rules'][rule_index]
+        widgets = sender.parent().widgets
+        layout = sender.parent().layout()
+        widgets = widgets[:-20] + widgets[-2:]
+        sender.parent().widgets = widgets
+
+        if rm_step(rule):
+            write_cfg(self.config)
+            for i in reversed(range(layout.count())):
+                widgetToRemove = layout.itemAt(i).widget()
+                # remove it from the layout list
+                # layout.removeWidget(widgetToRemove)
+                # remove it from the gui
+                widgetToRemove.setParent(None)
+            self.lay_rule_widgets(layout, widgets)
+            self.onRefresh()
 
 
 def on_user_button(self):

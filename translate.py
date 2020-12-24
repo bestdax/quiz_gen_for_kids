@@ -4,7 +4,7 @@ from collections import defaultdict
 def translate(string):
     trans_dict = defaultdict()
     reversed_trans_dict = defaultdict()
-    with open('translate.txt') as f:
+    with open('rsc/translate.txt') as f:
         lines = f.readlines()
         for line in lines:
             en, cn = line.strip().split()

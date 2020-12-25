@@ -1,10 +1,19 @@
+import os
+import sys
 from collections import defaultdict
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS2', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 
 def translate(string):
     trans_dict = defaultdict()
     reversed_trans_dict = defaultdict()
-    with open('rsc/translate.txt') as f:
+    translate_file = resource_path('rsc/translate.txt')
+    with open(translate_file) as f:
         lines = f.readlines()
         for line in lines:
             en, cn = line.strip().split()
@@ -21,4 +30,3 @@ def translate(string):
         return result
     else:
         return string
-

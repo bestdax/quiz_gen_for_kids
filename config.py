@@ -1,14 +1,20 @@
 import yaml
 import os
+from utils import resource_path
+from appdirs import AppDirs
 
 
 def config():
-    if os.path.exists('cfg.yml'):
-        with open('cfg.yml', 'r') as f:
-            config = yaml.load(f, Loader=yaml.Loader)
-        return config
+    dirs = AppDirs('Quiz', 'Dax')
+    if not os.path.exists(dirs.user_data_dir):
+        os.mkdir(dirs.user_data_dir)
+    config_path = os.path.join(dirs.user_data_dir, 'config.py')
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            cfg = yaml.load(f, Loader=yaml.Loader)
+        return cfg
     else:
-        with open('cfg.yml', 'w') as f:
+        with open(config_path, 'w') as f:
             cfg = {'default':
                        {'global': {'mix': False,
                                    'pages': 1,
@@ -29,11 +35,15 @@ def config():
                                    'weight': 1}]
                         }}
             yaml.dump(cfg, f)
-            return [cfg]
+            return cfg
 
 
 def write_cfg(cfg):
-    with open('cfg.yml', 'w') as f:
+    dirs = AppDirs('Quiz', 'Dax')
+    if not os.path.exists(dirs.user_data_dir):
+        os.mkdir(dirs.user_data_dir)
+    config_path = os.path.join(dirs.user_data_dir, 'config.py')
+    with open(config_path, 'w') as f:
         yaml.dump(cfg, f)
 
 

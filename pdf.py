@@ -1,5 +1,6 @@
 from fpdf import FPDF
 import datetime
+from utils import resource_path
 
 
 def today_string():
@@ -11,8 +12,10 @@ def today_string():
 class PDF(FPDF):
     def __init__(self):
         super().__init__()
-        self.add_font("Yahei", '', "rsc/Yahei.ttf", True)
-        self.add_font("dkzt", '', "rsc/dkzt.ttf", True)
+        yahei = resource_path('rsc/Yahei.ttf')
+        dkzt = resource_path('rsc/dkzt.ttf')
+        self.add_font("Yahei", '', yahei, True)
+        self.add_font("dkzt", '', dkzt, True)
 
     def set_title(self, title):
         self.set_xy(0, 0)

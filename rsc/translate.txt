@@ -29,3 +29,5 @@ example 示例
 refresh 刷新
 add_step 添加步骤
 rm_step 删除步骤
+add_rule 添加规则
+remove_rule 删除规则

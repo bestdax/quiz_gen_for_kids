@@ -8,7 +8,7 @@ def config():
     dirs = AppDirs('Quiz', 'Dax')
     if not os.path.exists(dirs.user_data_dir):
         os.mkdir(dirs.user_data_dir)
-    config_path = os.path.join(dirs.user_data_dir, 'config.py')
+    config_path = os.path.join(dirs.user_data_dir, 'config.yml')
     if os.path.exists(config_path):
         with open(config_path, 'r') as f:
             cfg = yaml.load(f, Loader=yaml.Loader)
@@ -42,7 +42,7 @@ def write_cfg(cfg):
     dirs = AppDirs('Quiz', 'Dax')
     if not os.path.exists(dirs.user_data_dir):
         os.mkdir(dirs.user_data_dir)
-    config_path = os.path.join(dirs.user_data_dir, 'config.py')
+    config_path = os.path.join(dirs.user_data_dir, 'config.yml')
     with open(config_path, 'w') as f:
         yaml.dump(cfg, f)
 
@@ -67,3 +67,24 @@ def rm_step(rule):
         return True
     else:
         return False
+
+
+def add_rule(user_cfg):
+    new_rule = {'first_number': {'display': True, 'range': 100},
+                'show_answer': False,
+                'steps': [{'limits': {'borrow': False,
+                                      'brackets': True,
+                                      'carry': False,
+                                      'ceiling': 100,
+                                      'floor': None,
+                                      'remainder': False},
+                           'number': {'display': True, 'range': 100},
+                           'operators': '+-'}
+                          ],
+                'weight': 0}
+    user_cfg['rules'].append(new_rule)
+    return new_rule
+
+
+def delete_rule(user_cfg, rule_index):
+    user_cfg['rules'].pop(rule_index)

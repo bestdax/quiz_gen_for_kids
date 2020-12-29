@@ -10,6 +10,9 @@ from config import config, write_cfg, add_step, rm_step, add_rule, delete_rule
 from quizzes import quiz_gen, gen_pdf_quiz
 
 
+# TODO double click tab to rename it
+# TODO add user
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -181,13 +184,13 @@ class MainWindow(QWidget):
             widget = QComboBox()
             widget.setObjectName(key)
             self.setup_combo_and_default(widget, translate(str(value)))
-            widget.currentIndexChanged.connect(self.onChange)
+            widget.currentIndexChanged.connect(self.on_change)
         else:
             value = str(translate(value))
             widget = QLineEdit()
             widget.setObjectName(key)
             widget.setText(value)
-            widget.textChanged.connect(self.onChange)
+            widget.textChanged.connect(self.on_change)
         return label, widget
 
     def build_rule_widgets(self, rule):
@@ -235,7 +238,7 @@ class MainWindow(QWidget):
         gen_button.clicked.connect(lambda: gen_pdf_quiz(self.config))
         self.layout().addWidget(gen_button)
 
-    def onChange(self):
+    def on_change(self):
         sender = self.sender()
         if sender.parent().objectName() == 'global':
             user = sender.parent().parent().objectName()
@@ -273,8 +276,8 @@ class MainWindow(QWidget):
 
     def onRefresh(self):
         sender = self.sender()
-        user = sender.parent().parent().parent().parent().objectName()
-        rule_index = int(sender.parent().objectName().split()[1])
+        user = self.tab_widget.currentWidget().objectName()
+        rule_index = self.tab_widget.currentWidget().rule_tab_widget.currentIndex()
         rule = self.config[user]['rules'][rule_index]
         quiz = quiz_gen(rule)
         for widget in sender.parent().children():

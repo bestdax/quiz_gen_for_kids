@@ -13,7 +13,7 @@ def gen_pdf_quiz(cfg):
         for i in range(cfg[user]['global']['pages']):
             pdf.add_page()
             pdf.set_title('四则运算练习')
-            pdf.set_date(cfg[user]['global']['show_date'])
+            pdf.set_date(date=cfg[user]['global']['show_date'])
             quizzes = bulk_quiz_gen(cfg[user])
             pdf.set_quizzes(quizzes=quizzes)
         quiz_dir = cfg[user]['global']['quiz_dir']
@@ -112,7 +112,11 @@ def quiz_gen(rule):
     quiz_components = []
     for n, step in enumerate(rule['steps']):
         limits = step['limits']
+        count = 0
         while True:
+            if count > 1000:
+                return
+            count += 1
             if n == 0:
                 a = rand(rule['first_number']['range'])
             op = random.choice(step['operators'])

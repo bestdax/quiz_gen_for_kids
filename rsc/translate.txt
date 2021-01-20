@@ -31,3 +31,6 @@ add_step 添加步骤
 rm_step 删除步骤
 add_rule 添加规则
 remove_rule 删除规则
+File 文件
+Quit 退出
+Tools 工具

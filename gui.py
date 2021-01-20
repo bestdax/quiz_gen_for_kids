@@ -4,7 +4,8 @@ import sys
 from translate import translate
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout, QGroupBox, QCheckBox, QPushButton, QGridLayout, \
-    QTabWidget, QLabel, QComboBox, QLineEdit, QHBoxLayout, QSpacerItem, QSizePolicy, QFrame, QScrollArea
+    QTabWidget, QLabel, QComboBox, QLineEdit, QHBoxLayout, QSpacerItem, QSizePolicy, QFrame, QScrollArea, QMainWindow, \
+    QAction, QMenuBar
 from PyQt5.Qt import Qt
 from config import config, write_cfg, add_step, rm_step, add_rule, delete_rule
 from quizzes import quiz_gen, gen_pdf_quiz
@@ -13,7 +14,7 @@ from quizzes import quiz_gen, gen_pdf_quiz
 # TODO double click tab to rename it
 # TODO add user
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.config = config()
@@ -23,15 +24,18 @@ class MainWindow(QWidget):
     # noinspection PyUnresolvedReferences
     def initializeUI(self):
         self.setWindowTitle(translate('rule_setting'))
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
         self.main_win_layout = QGridLayout()
+        self.central_widget.setLayout(self.main_win_layout)
         self.setup_tab()
-        self.setLayout(self.main_win_layout)
         self.add_tab_pages()
         self.setup_global_settings()
         self.set_rules()
-        self.add_rule_button()
-        self.remove_rule_button()
+        # self.add_rule_button()
+        # self.remove_rule_button()
         self.setup_buttons()
+        self.create_menu()
         self.show()
 
     def setup_tab(self):
@@ -136,14 +140,14 @@ class MainWindow(QWidget):
         for tab in self.tabs:
             add_rule_button = QPushButton(translate('add_rule'))
             add_rule_button.clicked.connect(lambda: self.on_add_rule())
-            # tab.layout().addWidget(add_rule_button)
+            tab.layout().addWidget(add_rule_button)
 
     def remove_rule_button(self):
         # remove rule button
         for tab in self.tabs:
             remove_rule_button = QPushButton(translate('remove_rule'))
             remove_rule_button.clicked.connect(lambda: self.on_remove_rule())
-            # tab.layout().addWidget(remove_rule_button)
+            tab.layout().addWidget(remove_rule_button)
 
     def lay_rule_widgets(self, layout, widgets):
         layout.addWidget(widgets[0], 0, 0)
@@ -236,7 +240,7 @@ class MainWindow(QWidget):
     def setup_buttons(self):
         gen_button = QPushButton(translate('gen_quiz'))
         gen_button.clicked.connect(lambda: gen_pdf_quiz(self.config))
-        self.layout().addWidget(gen_button)
+        self.main_win_layout.addWidget(gen_button)
 
     def on_change(self):
         sender = self.sender()
@@ -381,8 +385,7 @@ class MainWindow(QWidget):
             self.onRefresh()
 
     def on_add_rule(self):
-        sender = self.sender()
-        tab = sender.parent()
+        tab = self.tab_widget.currentWidget()
         user = tab.objectName()
         cfg = self.config[user]
         new_rule = add_rule(cfg)
@@ -391,8 +394,7 @@ class MainWindow(QWidget):
         self.set_a_rule(tab, new_rule, rules_amount - 1)
 
     def on_remove_rule(self):
-        sender = self.sender()
-        tab = sender.parent()
+        tab = self.tab_widget.currentWidget()
         user = tab.objectName()
         cfg = self.config[user]
         current_index_of_rule = tab.rule_tab_widget.currentIndex()
@@ -400,9 +402,27 @@ class MainWindow(QWidget):
         tab.rule_tab_widget.removeTab(current_index_of_rule)
         write_cfg(self.config)
 
+    def create_menu(self):
+        menu_bar = self.menuBar()
+        file_menu = menu_bar.addMenu('File')
+        exit_action = QAction('Quit', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
 
-def on_user_button(self):
-    self.close()
+        tool_menu = menu_bar.addMenu('Tools')
+        add_rule_action = QAction('add_rule', self)
+        add_rule_action.triggered.connect(self.on_add_rule)
+        tool_menu.addAction(add_rule_action)
+        rm_rule_action = QAction('remove_rule', self)
+        rm_rule_action.triggered.connect(self.on_remove_rule)
+        tool_menu.addAction(rm_rule_action)
+        for action in menu_bar.actions():
+            text = action.text()
+            action.setText(translate(text))
+            for act in action.menu().actions():
+                act_text = act.text()
+                act.setText(translate(act_text))
 
 
 if __name__ == '__main__':
